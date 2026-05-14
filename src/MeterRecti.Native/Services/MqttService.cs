@@ -1,11 +1,14 @@
 using MeterRecti.Native.Models;
 using MQTTnet;
+using MQTTnet.Packets;
 
 namespace MeterRecti.Native.Services;
 
 public sealed class MqttService : IMqttService
 {
 	private IMqttClient? client;
+
+	public event EventHandler<MqttMessageReceivedEventArgs>? MessageReceived;
 
 	public bool IsConnected => client?.IsConnected == true;
 
@@ -19,6 +22,18 @@ public sealed class MqttService : IMqttService
 		}
 
 		client = new MqttClientFactory().CreateMqttClient();
+		client.ApplicationMessageReceivedAsync += args =>
+		{
+			var payload = args.ApplicationMessage.ConvertPayloadToString();
+			MessageReceived?.Invoke(
+				this,
+				new MqttMessageReceivedEventArgs(
+					args.ApplicationMessage.Topic,
+					payload,
+					args.ApplicationMessage.Retain));
+
+			return Task.CompletedTask;
+		};
 
 		var optionsBuilder = new MqttClientOptionsBuilder()
 			.WithClientId(settings.ClientId)
@@ -51,6 +66,49 @@ public sealed class MqttService : IMqttService
 		}
 	}
 
+	public async Task SubscribeAsync(string topic, CancellationToken cancellationToken)
+	{
+		EnsureConnected();
+		var options = new MqttClientSubscribeOptions
+		{
+			TopicFilters =
+			[
+				new MqttTopicFilter
+				{
+					Topic = topic
+				}
+			]
+		};
+
+		await client!.SubscribeAsync(options, cancellationToken);
+	}
+
+	public async Task UnsubscribeAsync(string topic, CancellationToken cancellationToken)
+	{
+		if (client?.IsConnected != true)
+		{
+			return;
+		}
+
+		var options = new MqttClientUnsubscribeOptions
+		{
+			TopicFilters = [topic]
+		};
+
+		await client.UnsubscribeAsync(options, cancellationToken);
+	}
+
+	public async Task PublishAsync(string topic, string payload, CancellationToken cancellationToken)
+	{
+		EnsureConnected();
+		var message = new MqttApplicationMessageBuilder()
+			.WithTopic(topic)
+			.WithPayload(payload)
+			.Build();
+
+		await client!.PublishAsync(message, cancellationToken);
+	}
+
 	private static void Validate(MqttSettings settings)
 	{
 		if (string.IsNullOrWhiteSpace(settings.Host))
@@ -71,6 +129,14 @@ public sealed class MqttService : IMqttService
 		if (string.IsNullOrWhiteSpace(settings.PublishTopic))
 		{
 			throw new InvalidOperationException("发布 Topic 不能为空。");
+		}
+	}
+
+	private void EnsureConnected()
+	{
+		if (client?.IsConnected != true)
+		{
+			throw new InvalidOperationException("MQTT 未连接。");
 		}
 	}
 }

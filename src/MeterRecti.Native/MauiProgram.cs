@@ -20,6 +20,9 @@ public static class MauiProgram
 
 		builder.Services.AddSingleton<IAppSettingsStore, PreferencesAppSettingsStore>();
 		builder.Services.AddSingleton<IMqttService, MqttService>();
+		builder.Services.AddSingleton<IHistoryStore, SQLiteHistoryStore>();
+		builder.Services.AddSingleton<ICsvExportService, CsvExportService>();
+		builder.Services.AddSingleton<IShareService, ShareService>();
 		builder.Services.AddSingleton<CalibrationViewModel>();
 		builder.Services.AddSingleton<SettingsViewModel>();
 		builder.Services.AddSingleton<HistoryViewModel>();

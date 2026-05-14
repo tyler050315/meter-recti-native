@@ -3,6 +3,8 @@
     x:Class="MeterRecti.Native.Pages.CalibrationPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:MeterRecti.Native.ViewModels"
+    x:DataType="viewModels:CalibrationViewModel"
     Title="校准"
     BackgroundColor="{StaticResource Surface}">
 
@@ -18,12 +20,12 @@
                     <RoundRectangle CornerRadius="14" />
                 </Border.StrokeShape>
                 <VerticalStackLayout Spacing="14">
-                    <Label Text="MQTT 未连接" TextColor="{StaticResource Danger}" FontAttributes="Bold" />
-                    <Entry Placeholder="扫描或输入 SN" Keyboard="Numeric" />
-                    <Entry Placeholder="水表读数 0 - 999999999" Keyboard="Numeric" MaxLength="9" />
+                    <Label Text="{Binding StatusText}" TextColor="{Binding StatusColor}" FontAttributes="Bold" />
+                    <Entry Text="{Binding SerialNumber}" Placeholder="扫描或输入 SN" Keyboard="Numeric" />
+                    <Entry Text="{Binding MeterReading}" Placeholder="水表读数 0 - 999999999" Keyboard="Numeric" MaxLength="9" />
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                        <Button Text="扫码" BackgroundColor="{StaticResource Mist}" TextColor="{StaticResource TextPrimary}" />
-                        <Button Grid.Column="1" Text="校准" BackgroundColor="{StaticResource Periwinkle}" TextColor="{StaticResource TextPrimary}" FontAttributes="Bold" />
+                        <Button Text="扫码" Command="{Binding ScanCommand}" BackgroundColor="{StaticResource Mist}" TextColor="{StaticResource TextPrimary}" />
+                        <Button Grid.Column="1" Text="校准" Command="{Binding StartCalibrationCommand}" BackgroundColor="{StaticResource Periwinkle}" TextColor="{StaticResource TextPrimary}" FontAttributes="Bold" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>

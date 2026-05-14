@@ -3,6 +3,8 @@
     x:Class="MeterRecti.Native.Pages.HistoryPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:MeterRecti.Native.ViewModels"
+    x:DataType="viewModels:HistoryViewModel"
     Title="历史"
     BackgroundColor="{StaticResource Surface}">
 
@@ -10,19 +12,45 @@
         <VerticalStackLayout Spacing="4">
             <Label Text="Records" TextColor="{StaticResource TextSecondary}" FontSize="13" />
             <Label Text="历史记录" TextColor="{StaticResource TextPrimary}" FontSize="28" FontAttributes="Bold" />
+            <Label Text="{Binding StatusText}" TextColor="{Binding StatusColor}" FontAttributes="Bold" />
         </VerticalStackLayout>
 
-        <Border Grid.Row="1" Margin="0,18,0,0" Stroke="{StaticResource Divider}" StrokeThickness="1" BackgroundColor="White" Padding="16">
+        <Border Grid.Row="1" Margin="0,18,0,0" Stroke="{StaticResource Divider}" StrokeThickness="1" BackgroundColor="White" Padding="14">
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="14" />
             </Border.StrokeShape>
-            <VerticalStackLayout Spacing="12">
-                <Label Text="暂无历史记录" TextColor="{StaticResource TextSecondary}" HorizontalTextAlignment="Center" />
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                    <Button Text="导出 CSV" BackgroundColor="{StaticResource Mist}" TextColor="{StaticResource TextPrimary}" />
-                    <Button Grid.Column="1" Text="清空" BackgroundColor="{StaticResource Mist}" TextColor="{StaticResource Danger}" />
+            <Grid RowDefinitions="*,Auto" RowSpacing="12">
+                <CollectionView ItemsSource="{Binding Records}">
+                    <CollectionView.EmptyView>
+                        <Label Text="暂无历史记录" TextColor="{StaticResource TextSecondary}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:HistoryRecordItemViewModel">
+                            <SwipeView>
+                                <SwipeView.RightItems>
+                                    <SwipeItems>
+                                        <SwipeItem
+                                            Text="删除"
+                                            BackgroundColor="{StaticResource Danger}"
+                                            Command="{Binding DeleteCommand}"
+                                            CommandParameter="{Binding Record}" />
+                                    </SwipeItems>
+                                </SwipeView.RightItems>
+                                <Grid Padding="0,10" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding SerialNumber}" TextColor="{StaticResource TextPrimary}" FontAttributes="Bold" />
+                                    <Label Grid.Column="1" Text="{Binding MeterSum}" TextColor="{StaticResource TextPrimary}" />
+                                    <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding CalibratedAtLocal, StringFormat='{0:yyyy-MM-dd HH:mm:ss}'}" TextColor="{StaticResource TextSecondary}" FontSize="13" />
+                                </Grid>
+                            </SwipeView>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Button Text="导出 CSV" Command="{Binding ExportCommand}" BackgroundColor="{StaticResource Periwinkle}" TextColor="{StaticResource TextPrimary}" FontAttributes="Bold" />
+                    <Button Grid.Column="1" Text="清空" Command="{Binding ClearCommand}" BackgroundColor="{StaticResource Mist}" TextColor="{StaticResource Danger}" />
                 </Grid>
-            </VerticalStackLayout>
+            </Grid>
         </Border>
     </Grid>
 </ContentPage>
