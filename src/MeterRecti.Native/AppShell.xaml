@@ -13,14 +13,14 @@
 
     <TabBar>
         <ShellContent
-            Title="MQTT"
-            ContentTemplate="{DataTemplate pages:SettingsPage}"
-            Route="settings" />
-
-        <ShellContent
             Title="校准"
             ContentTemplate="{DataTemplate pages:CalibrationPage}"
             Route="calibration" />
+
+        <ShellContent
+            Title="MQTT"
+            ContentTemplate="{DataTemplate pages:SettingsPage}"
+            Route="settings" />
 
         <ShellContent
             Title="历史"
