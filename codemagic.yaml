@@ -46,6 +46,20 @@ workflows:
           fi
 
           echo "Packaging app bundle: $APP_PATH"
+          INFO_PLIST="$APP_PATH/Info.plist"
+          BUNDLE_ID="$(plutil -extract CFBundleIdentifier raw -o - "$INFO_PLIST")"
+          EXECUTABLE="$(plutil -extract CFBundleExecutable raw -o - "$INFO_PLIST")"
+          DISPLAY_NAME="$(plutil -extract CFBundleDisplayName raw -o - "$INFO_PLIST" 2>/dev/null || plutil -extract CFBundleName raw -o - "$INFO_PLIST")"
+          echo "Bundle ID: $BUNDLE_ID"
+          echo "Display name: $DISPLAY_NAME"
+          echo "Executable: $EXECUTABLE"
+          file "$APP_PATH/$EXECUTABLE"
+          lipo -info "$APP_PATH/$EXECUTABLE"
+          if [ "$BUNDLE_ID" != "com.meterrecti.native" ]; then
+            echo "Unexpected bundle id: $BUNDLE_ID"
+            exit 1
+          fi
+
           mkdir -p "$OUTPUT_DIR/Payload"
           cp -R "$APP_PATH" "$OUTPUT_DIR/Payload/"
           (cd "$OUTPUT_DIR" && zip -qry MeterRecti-unsigned-device.ipa Payload)

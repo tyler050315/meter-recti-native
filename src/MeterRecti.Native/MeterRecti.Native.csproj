@@ -21,10 +21,11 @@
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 
 		<!-- Display name -->
-		<ApplicationTitle>Meter Recti</ApplicationTitle>
+		<ApplicationTitle>Meter Recti Native</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>com.meterrecti.native</ApplicationId>
+		<ApplicationIdGuid>7A8F5A7D-3B0C-4D5B-9B57-7C8D1F1C2E21</ApplicationIdGuid>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
