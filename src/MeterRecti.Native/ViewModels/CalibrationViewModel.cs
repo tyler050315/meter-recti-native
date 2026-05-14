@@ -10,6 +10,7 @@ public sealed class CalibrationViewModel : ObservableObject
 	private readonly IAppSettingsStore settingsStore;
 	private readonly IMqttService mqttService;
 	private readonly IHistoryStore historyStore;
+	private readonly IScannerService scannerService;
 	private CancellationTokenSource? timeoutSource;
 	private MqttSettings? settings;
 	private string? activeSubscribeTopic;
@@ -19,11 +20,16 @@ public sealed class CalibrationViewModel : ObservableObject
 	private Color statusColor = Color.FromArgb("#657684");
 	private bool isBusy;
 
-	public CalibrationViewModel(IAppSettingsStore settingsStore, IMqttService mqttService, IHistoryStore historyStore)
+	public CalibrationViewModel(
+		IAppSettingsStore settingsStore,
+		IMqttService mqttService,
+		IHistoryStore historyStore,
+		IScannerService scannerService)
 	{
 		this.settingsStore = settingsStore;
 		this.mqttService = mqttService;
 		this.historyStore = historyStore;
+		this.scannerService = scannerService;
 		this.mqttService.MessageReceived += OnMessageReceived;
 		StartCalibrationCommand = new AsyncCommand(StartCalibrationAsync, () => !IsBusy);
 		ScanCommand = new AsyncCommand(ScanAsync, () => !IsBusy);
@@ -116,10 +122,25 @@ public sealed class CalibrationViewModel : ObservableObject
 		}
 	}
 
-	private Task ScanAsync()
+	private async Task ScanAsync()
 	{
-		SetStatus("原生扫码将在下一步接入。", "#657684");
-		return Task.CompletedTask;
+		try
+		{
+			var result = await scannerService.ScanAsync(CancellationToken.None);
+			if (!string.IsNullOrWhiteSpace(result))
+			{
+				SerialNumber = result.Trim();
+				SetStatus("扫码成功，SN 已填入。", "#2D9B75");
+			}
+			else
+			{
+				SetStatus("已取消扫码。", "#657684");
+			}
+		}
+		catch (Exception ex)
+		{
+			SetStatus(ex.Message, "#C6514A");
+		}
 	}
 
 	private async void OnMessageReceived(object? sender, MqttMessageReceivedEventArgs args)

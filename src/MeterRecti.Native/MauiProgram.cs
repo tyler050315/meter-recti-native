@@ -2,6 +2,9 @@ using MeterRecti.Native.Pages;
 using MeterRecti.Native.Services;
 using MeterRecti.Native.ViewModels;
 using Microsoft.Extensions.Logging;
+#if IOS
+using MeterRecti.Native.Platforms.iOS;
+#endif
 
 namespace MeterRecti.Native;
 
@@ -23,6 +26,9 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IHistoryStore, SQLiteHistoryStore>();
 		builder.Services.AddSingleton<ICsvExportService, CsvExportService>();
 		builder.Services.AddSingleton<IShareService, ShareService>();
+#if IOS
+		builder.Services.AddSingleton<IScannerService, IosScannerService>();
+#endif
 		builder.Services.AddSingleton<CalibrationViewModel>();
 		builder.Services.AddSingleton<SettingsViewModel>();
 		builder.Services.AddSingleton<HistoryViewModel>();
