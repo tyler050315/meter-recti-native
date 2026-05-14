@@ -24,14 +24,27 @@ workflows:
         script: dotnet restore "$PROJECT_PATH"
       - name: Publish unsigned iOS app
         script: |
+          rm -rf "$OUTPUT_DIR"
+          mkdir -p "$OUTPUT_DIR/publish"
           dotnet publish "$PROJECT_PATH" \
             -f net9.0-ios \
             -c Release \
             -p:RuntimeIdentifier=ios-arm64 \
-            -p:ArchiveOnBuild=true \
-            -p:CodesignKey="" \
-            -p:CodesignProvision="" \
-            -o "$OUTPUT_DIR"
+            -p:EnableCodeSigning=false \
+            -p:BuildIpa=false \
+            -p:ArchiveOnBuild=false \
+            -o "$OUTPUT_DIR/publish"
+
+          APP_PATH="$(find "$OUTPUT_DIR/publish" -maxdepth 2 -name "*.app" -type d | head -n 1)"
+          if [ -z "$APP_PATH" ]; then
+            echo "No .app bundle was produced."
+            find "$OUTPUT_DIR" -maxdepth 5 -print
+            exit 1
+          fi
+
+          mkdir -p "$OUTPUT_DIR/Payload"
+          cp -R "$APP_PATH" "$OUTPUT_DIR/Payload/"
+          (cd "$OUTPUT_DIR" && zip -qry MeterRecti-unsigned-device.ipa Payload)
     artifacts:
       - build/ios/**/*.ipa
       - build/ios/**/*.app
