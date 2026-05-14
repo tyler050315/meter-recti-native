@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MeterRecti.Native.Pages.HistoryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="历史"
+    BackgroundColor="{StaticResource Surface}">
+
+    <Grid RowDefinitions="Auto,*" Padding="20,18">
+        <VerticalStackLayout Spacing="4">
+            <Label Text="Records" TextColor="{StaticResource TextSecondary}" FontSize="13" />
+            <Label Text="历史记录" TextColor="{StaticResource TextPrimary}" FontSize="28" FontAttributes="Bold" />
+        </VerticalStackLayout>
+
+        <Border Grid.Row="1" Margin="0,18,0,0" Stroke="{StaticResource Divider}" StrokeThickness="1" BackgroundColor="White" Padding="16">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="14" />
+            </Border.StrokeShape>
+            <VerticalStackLayout Spacing="12">
+                <Label Text="暂无历史记录" TextColor="{StaticResource TextSecondary}" HorizontalTextAlignment="Center" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Button Text="导出 CSV" BackgroundColor="{StaticResource Mist}" TextColor="{StaticResource TextPrimary}" />
+                    <Button Grid.Column="1" Text="清空" BackgroundColor="{StaticResource Mist}" TextColor="{StaticResource Danger}" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

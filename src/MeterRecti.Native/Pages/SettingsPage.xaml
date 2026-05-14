@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MeterRecti.Native.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="MQTT"
+    BackgroundColor="{StaticResource Surface}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20,18" Spacing="18">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Connection" TextColor="{StaticResource TextSecondary}" FontSize="13" />
+                <Label Text="MQTT 设置" TextColor="{StaticResource TextPrimary}" FontSize="28" FontAttributes="Bold" />
+            </VerticalStackLayout>
+
+            <Border Stroke="{StaticResource Divider}" StrokeThickness="1" BackgroundColor="White" Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="14" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="12">
+                    <Entry Placeholder="Broker 地址，例如 broker.example.com" Keyboard="Url" />
+                    <Entry Placeholder="端口，例如 8883" Keyboard="Numeric" />
+                    <HorizontalStackLayout Spacing="10">
+                        <Switch IsToggled="True" />
+                        <Label Text="启用 TLS" VerticalTextAlignment="Center" TextColor="{StaticResource TextPrimary}" />
+                    </HorizontalStackLayout>
+                    <Entry Placeholder="用户名" />
+                    <Entry Placeholder="密码" IsPassword="True" />
+                    <Entry Placeholder="订阅 Topic 基础路径" />
+                    <Entry Placeholder="发布 Topic 基础路径" />
+                    <Button Text="保存并连接" BackgroundColor="{StaticResource Periwinkle}" TextColor="{StaticResource TextPrimary}" FontAttributes="Bold" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

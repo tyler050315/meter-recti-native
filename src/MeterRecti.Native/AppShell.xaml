@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="MeterRecti.Native.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:MeterRecti.Native.Pages"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.TabBarBackgroundColor="{StaticResource Surface}"
+    Shell.TabBarForegroundColor="{StaticResource Periwinkle}"
+    Shell.TabBarTitleColor="{StaticResource TextPrimary}"
+    Shell.TabBarUnselectedColor="{StaticResource TextSecondary}"
+    Title="Meter Recti">
+
+    <TabBar>
+        <ShellContent
+            Title="MQTT"
+            ContentTemplate="{DataTemplate pages:SettingsPage}"
+            Route="settings" />
+
+        <ShellContent
+            Title="校准"
+            ContentTemplate="{DataTemplate pages:CalibrationPage}"
+            Route="calibration" />
+
+        <ShellContent
+            Title="历史"
+            ContentTemplate="{DataTemplate pages:HistoryPage}"
+            Route="history" />
+    </TabBar>
+
+</Shell>

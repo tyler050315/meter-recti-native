@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MeterRecti.Native.Pages.CalibrationPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="校准"
+    BackgroundColor="{StaticResource Surface}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20,18" Spacing="18">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Calibration" TextColor="{StaticResource TextSecondary}" FontSize="13" />
+                <Label Text="水表校准" TextColor="{StaticResource TextPrimary}" FontSize="28" FontAttributes="Bold" />
+            </VerticalStackLayout>
+
+            <Border Stroke="{StaticResource Divider}" StrokeThickness="1" BackgroundColor="White" Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="14" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="MQTT 未连接" TextColor="{StaticResource Danger}" FontAttributes="Bold" />
+                    <Entry Placeholder="扫描或输入 SN" Keyboard="Numeric" />
+                    <Entry Placeholder="水表读数 0 - 999999999" Keyboard="Numeric" MaxLength="9" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Button Text="扫码" BackgroundColor="{StaticResource Mist}" TextColor="{StaticResource TextPrimary}" />
+                        <Button Grid.Column="1" Text="校准" BackgroundColor="{StaticResource Periwinkle}" TextColor="{StaticResource TextPrimary}" FontAttributes="Bold" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

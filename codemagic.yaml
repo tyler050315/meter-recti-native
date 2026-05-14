@@ -1,0 +1,29 @@
+workflows:
+  ios-unsigned-device-ipa:
+    name: iOS unsigned device IPA
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      vars:
+        PROJECT_PATH: src/MeterRecti.Native/MeterRecti.Native.csproj
+        OUTPUT_DIR: build/ios
+    scripts:
+      - name: Show .NET info
+        script: dotnet --info
+      - name: Install MAUI workload
+        script: dotnet workload install maui ios
+      - name: Restore
+        script: dotnet restore "$PROJECT_PATH"
+      - name: Publish unsigned iOS app
+        script: |
+          dotnet publish "$PROJECT_PATH" \
+            -f net9.0-ios \
+            -c Release \
+            -p:RuntimeIdentifier=ios-arm64 \
+            -p:ArchiveOnBuild=true \
+            -p:CodesignKey="" \
+            -p:CodesignProvision="" \
+            -o "$OUTPUT_DIR"
+    artifacts:
+      - build/ios/**/*.ipa
+      - build/ios/**/*.app
