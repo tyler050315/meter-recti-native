@@ -3,6 +3,8 @@
     x:Class="MeterRecti.Native.Pages.SettingsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:MeterRecti.Native.ViewModels"
+    x:DataType="viewModels:SettingsViewModel"
     Title="MQTT"
     BackgroundColor="{StaticResource Surface}">
 
@@ -18,17 +20,21 @@
                     <RoundRectangle CornerRadius="14" />
                 </Border.StrokeShape>
                 <VerticalStackLayout Spacing="12">
-                    <Entry Placeholder="Broker 地址，例如 broker.example.com" Keyboard="Url" />
-                    <Entry Placeholder="端口，例如 8883" Keyboard="Numeric" />
+                    <Label Text="{Binding StatusText}" TextColor="{Binding StatusColor}" FontAttributes="Bold" />
+                    <Entry Text="{Binding Host}" Placeholder="Broker 地址，例如 broker.example.com" Keyboard="Url" />
+                    <Entry Text="{Binding Port}" Placeholder="端口，例如 8883" Keyboard="Numeric" />
                     <HorizontalStackLayout Spacing="10">
-                        <Switch IsToggled="True" />
+                        <Switch IsToggled="{Binding UseTls}" />
                         <Label Text="启用 TLS" VerticalTextAlignment="Center" TextColor="{StaticResource TextPrimary}" />
                     </HorizontalStackLayout>
-                    <Entry Placeholder="用户名" />
-                    <Entry Placeholder="密码" IsPassword="True" />
-                    <Entry Placeholder="订阅 Topic 基础路径" />
-                    <Entry Placeholder="发布 Topic 基础路径" />
-                    <Button Text="保存并连接" BackgroundColor="{StaticResource Periwinkle}" TextColor="{StaticResource TextPrimary}" FontAttributes="Bold" />
+                    <Entry Text="{Binding Username}" Placeholder="用户名" />
+                    <Entry Text="{Binding Password}" Placeholder="密码" IsPassword="True" />
+                    <Entry Text="{Binding SubscribeTopic}" Placeholder="订阅 Topic 基础路径" />
+                    <Entry Text="{Binding PublishTopic}" Placeholder="发布 Topic 基础路径" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Button Text="保存并连接" Command="{Binding SaveAndConnectCommand}" BackgroundColor="{StaticResource Periwinkle}" TextColor="{StaticResource TextPrimary}" FontAttributes="Bold" />
+                        <Button Grid.Column="1" Text="断开" Command="{Binding DisconnectCommand}" BackgroundColor="{StaticResource Mist}" TextColor="{StaticResource TextPrimary}" />
+                    </Grid>
                 </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>

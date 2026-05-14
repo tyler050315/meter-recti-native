@@ -1,4 +1,5 @@
 using MeterRecti.Native.Pages;
+using MeterRecti.Native.Services;
 using MeterRecti.Native.ViewModels;
 using Microsoft.Extensions.Logging;
 
@@ -17,6 +18,8 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
 
+		builder.Services.AddSingleton<IAppSettingsStore, PreferencesAppSettingsStore>();
+		builder.Services.AddSingleton<IMqttService, MqttService>();
 		builder.Services.AddSingleton<CalibrationViewModel>();
 		builder.Services.AddSingleton<SettingsViewModel>();
 		builder.Services.AddSingleton<HistoryViewModel>();
