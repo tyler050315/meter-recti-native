@@ -4,10 +4,18 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
+      xcode: latest
       vars:
         PROJECT_PATH: src/MeterRecti.Native/MeterRecti.Native.csproj
         OUTPUT_DIR: build/ios
     scripts:
+      - name: Install .NET SDK
+        script: |
+          curl -sSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
+          chmod +x dotnet-install.sh
+          ./dotnet-install.sh --channel 9.0 --install-dir "$HOME/.dotnet"
+          echo "DOTNET_ROOT=$HOME/.dotnet" >> "$CM_ENV"
+          echo "PATH=$HOME/.dotnet:$PATH" >> "$CM_ENV"
       - name: Show .NET info
         script: dotnet --info
       - name: Install MAUI workload
