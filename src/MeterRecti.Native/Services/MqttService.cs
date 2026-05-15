@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using MeterRecti.Native.Models;
 using MQTTnet;
 using MQTTnet.Packets;
@@ -15,6 +16,7 @@ public sealed class MqttService : IMqttService
 	public async Task ConnectAsync(MqttSettings settings, CancellationToken cancellationToken)
 	{
 		Validate(settings);
+		var host = settings.Host.Trim();
 
 		if (client?.IsConnected == true)
 		{
@@ -37,7 +39,7 @@ public sealed class MqttService : IMqttService
 
 		var optionsBuilder = new MqttClientOptionsBuilder()
 			.WithClientId(settings.ClientId)
-			.WithTcpServer(settings.Host, settings.Port)
+			.WithTcpServer(host, settings.Port)
 			.WithCleanSession()
 			.WithTimeout(TimeSpan.FromSeconds(15));
 
@@ -51,11 +53,18 @@ public sealed class MqttService : IMqttService
 			optionsBuilder.WithTlsOptions(tls =>
 			{
 				tls.UseTls();
-				tls.WithTargetHost(settings.Host);
+				tls.WithTargetHost(host);
 			});
 		}
 
-		await client.ConnectAsync(optionsBuilder.Build(), cancellationToken);
+		try
+		{
+			await client.ConnectAsync(optionsBuilder.Build(), cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			throw new InvalidOperationException($"MQTT 连接失败：{DescribeException(ex)}", ex);
+		}
 	}
 
 	public async Task DisconnectAsync(CancellationToken cancellationToken)
@@ -130,6 +139,24 @@ public sealed class MqttService : IMqttService
 		{
 			throw new InvalidOperationException("发布 Topic 不能为空。");
 		}
+	}
+
+	private static string DescribeException(Exception exception)
+	{
+		var parts = new List<string>();
+		for (var current = exception; current is not null; current = current.InnerException)
+		{
+			if (current is SocketException socketException)
+			{
+				parts.Add($"{current.GetType().Name}: {current.Message} (SocketError={socketException.SocketErrorCode}, NativeError={socketException.ErrorCode})");
+			}
+			else
+			{
+				parts.Add($"{current.GetType().Name}: {current.Message}");
+			}
+		}
+
+		return string.Join(" -> ", parts);
 	}
 
 	private void EnsureConnected()
