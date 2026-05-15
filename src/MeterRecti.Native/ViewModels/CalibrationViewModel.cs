@@ -14,6 +14,7 @@ public sealed class CalibrationViewModel : ObservableObject
 	private CancellationTokenSource? timeoutSource;
 	private MqttSettings? settings;
 	private string? activeSubscribeTopic;
+	private CalibrationStage calibrationStage;
 	private string serialNumber = string.Empty;
 	private string meterReading = string.Empty;
 	private string statusText = "请先连接 MQTT。";
@@ -110,6 +111,7 @@ public sealed class CalibrationViewModel : ObservableObject
 
 			CalibrationProtocol.ValidateInputs(SerialNumber, MeterReading);
 			IsBusy = true;
+			calibrationStage = CalibrationStage.WaitingForInitialM0;
 			activeSubscribeTopic = CalibrationProtocol.AppendSerialTopic(settings.SubscribeTopic, SerialNumber);
 			await mqttService.SubscribeAsync(activeSubscribeTopic, CancellationToken.None);
 			SetStatus("等待设备 M0 回包...", "#657684");
@@ -118,6 +120,7 @@ public sealed class CalibrationViewModel : ObservableObject
 		catch (Exception ex)
 		{
 			IsBusy = false;
+			calibrationStage = CalibrationStage.Idle;
 			SetStatus(ex.Message, "#C6514A");
 		}
 	}
@@ -156,21 +159,29 @@ public sealed class CalibrationViewModel : ObservableObject
 
 		try
 		{
-			if (CalibrationProtocol.IsExpectedM0(args.Payload, SerialNumber))
+			if (calibrationStage == CalibrationStage.WaitingForInitialM0 &&
+				CalibrationProtocol.IsExpectedM0(args.Payload, SerialNumber))
 			{
-				var publishTopic = CalibrationProtocol.AppendSerialTopic(settings.PublishTopic, SerialNumber);
-				var command = CalibrationProtocol.BuildCommand(SerialNumber, MeterReading);
-				SetStatus("收到 M0，正在发送校准命令...", "#657684");
-				await mqttService.PublishAsync(publishTopic, command, CancellationToken.None);
-				SetStatus("命令已发送，等待 M1 结果...", "#657684");
+				await SendCalibrationCommandAfterInitialM0Async();
+				return;
+			}
+
+			if (calibrationStage == CalibrationStage.WaitingForRestartM0 &&
+				CalibrationProtocol.IsExpectedM0(args.Payload, SerialNumber))
+			{
+				calibrationStage = CalibrationStage.WaitingForRestartM1;
+				SetStatus("收到重启后的 M0，等待 M1 结果...", "#657684");
 				StartTimeout();
 				return;
 			}
 
-			var result = CalibrationProtocol.TryReadM1Result(args.Payload, SerialNumber);
-			if (result is not null)
+			if (calibrationStage == CalibrationStage.WaitingForRestartM1)
 			{
-				await CompleteCalibrationAsync(result);
+				var result = CalibrationProtocol.TryReadM1Result(args.Payload, SerialNumber);
+				if (result is not null)
+				{
+					await CompleteCalibrationAsync(result);
+				}
 			}
 		}
 		catch (JsonException)
@@ -182,6 +193,25 @@ public sealed class CalibrationViewModel : ObservableObject
 			await StopCalibrationAsync();
 			SetStatus(ex.Message, "#C6514A");
 		}
+	}
+
+	private async Task SendCalibrationCommandAfterInitialM0Async()
+	{
+		calibrationStage = CalibrationStage.WaitingToSendCommand;
+		SetStatus("收到 M0，100ms 后发送校准命令...", "#657684");
+		await Task.Delay(100);
+
+		if (settings is null)
+		{
+			throw new InvalidOperationException("MQTT 设置已失效。");
+		}
+
+		var publishTopic = CalibrationProtocol.AppendSerialTopic(settings.PublishTopic, SerialNumber);
+		var command = CalibrationProtocol.BuildCommand(SerialNumber, MeterReading);
+		await mqttService.PublishAsync(publishTopic, command, CancellationToken.None);
+		calibrationStage = CalibrationStage.WaitingForRestartM0;
+		SetStatus("命令已发送，等待设备重启后的 M0...", "#657684");
+		StartTimeout();
 	}
 
 	private async Task CompleteCalibrationAsync(CalibrationResult result)
@@ -235,6 +265,7 @@ public sealed class CalibrationViewModel : ObservableObject
 	{
 		timeoutSource?.Cancel();
 		timeoutSource = null;
+		calibrationStage = CalibrationStage.Idle;
 
 		if (activeSubscribeTopic is not null)
 		{
@@ -252,5 +283,14 @@ public sealed class CalibrationViewModel : ObservableObject
 			StatusText = text;
 			StatusColor = Color.FromArgb(color);
 		});
+	}
+
+	private enum CalibrationStage
+	{
+		Idle,
+		WaitingForInitialM0,
+		WaitingToSendCommand,
+		WaitingForRestartM0,
+		WaitingForRestartM1
 	}
 }
