@@ -14,6 +14,8 @@
     <Color x:Key="Divider">#D8E7EE</Color>
     <Color x:Key="Success">#2D9B75</Color>
     <Color x:Key="Danger">#C6514A</Color>
+    <Color x:Key="MidnightBlue">#243645</Color>
+    <Color x:Key="Magenta">#9BC8FB</Color>
 
     <Color x:Key="Primary">#9BC8FB</Color>
     <Color x:Key="PrimaryDark">#243645</Color>
