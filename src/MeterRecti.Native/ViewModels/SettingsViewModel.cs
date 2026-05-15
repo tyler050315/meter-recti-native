@@ -6,6 +6,7 @@ namespace MeterRecti.Native.ViewModels;
 
 public sealed class SettingsViewModel : ObservableObject
 {
+	private const string NetworkNoticeShownKey = "mqtt.networkNoticeShown";
 	private readonly IAppSettingsStore settingsStore;
 	private readonly IMqttService mqttService;
 	private string host = string.Empty;
@@ -119,6 +120,7 @@ public sealed class SettingsViewModel : ObservableObject
 		try
 		{
 			var settings = CreateSettingsFromInput();
+			await ShowNetworkPermissionNoticeAsync();
 			settingsStore.SaveMqttSettings(settings);
 			StatusText = "正在连接...";
 			StatusColor = Color.FromArgb("#657684");
@@ -131,6 +133,24 @@ public sealed class SettingsViewModel : ObservableObject
 			StatusText = ex.Message;
 			StatusColor = Color.FromArgb("#C6514A");
 		}
+	}
+
+	private static async Task ShowNetworkPermissionNoticeAsync()
+	{
+		if (Preferences.Default.Get(NetworkNoticeShownKey, false))
+		{
+			return;
+		}
+
+		await MainThread.InvokeOnMainThreadAsync(async () =>
+		{
+			await Shell.Current.DisplayAlert(
+				"需要网络权限",
+				"首次连接 MQTT 时，请允许 Meter Recti Native 使用网络。如果连接失败，请到 iOS 设置 -> Meter Recti Native，打开“无线数据 / WLAN 与蜂窝网络”。",
+				"我知道了");
+		});
+
+		Preferences.Default.Set(NetworkNoticeShownKey, true);
 	}
 
 	private async Task DisconnectAsync()
