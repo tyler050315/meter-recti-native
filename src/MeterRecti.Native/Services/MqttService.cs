@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using MeterRecti.Native.Models;
 using MQTTnet;
+using MQTTnet.Formatter;
 using MQTTnet.Packets;
 
 namespace MeterRecti.Native.Services;
@@ -57,13 +58,21 @@ public sealed class MqttService : IMqttService
 			});
 		}
 
+		var options = optionsBuilder.Build();
+		options.ProtocolVersion = MqttProtocolVersion.V311;
+		if (options.ChannelOptions is MqttClientTcpOptions tcpOptions)
+		{
+			tcpOptions.DualMode = false;
+			tcpOptions.ProtocolType = ProtocolType.Tcp;
+		}
+
 		try
 		{
-			await client.ConnectAsync(optionsBuilder.Build(), cancellationToken);
+			await client.ConnectAsync(options, cancellationToken);
 		}
 		catch (Exception ex)
 		{
-			throw new InvalidOperationException($"MQTT 连接失败：{DescribeException(ex)}", ex);
+			throw new InvalidOperationException($"MQTT connect failed: {DescribeException(ex)}", ex);
 		}
 	}
 
@@ -122,22 +131,22 @@ public sealed class MqttService : IMqttService
 	{
 		if (string.IsNullOrWhiteSpace(settings.Host))
 		{
-			throw new InvalidOperationException("Broker 地址不能为空。");
+			throw new InvalidOperationException("Broker host is required.");
 		}
 
 		if (settings.Port is < 1 or > 65535)
 		{
-			throw new InvalidOperationException("端口必须在 1 到 65535 之间。");
+			throw new InvalidOperationException("Port must be between 1 and 65535.");
 		}
 
 		if (string.IsNullOrWhiteSpace(settings.SubscribeTopic))
 		{
-			throw new InvalidOperationException("订阅 Topic 不能为空。");
+			throw new InvalidOperationException("Subscribe topic is required.");
 		}
 
 		if (string.IsNullOrWhiteSpace(settings.PublishTopic))
 		{
-			throw new InvalidOperationException("发布 Topic 不能为空。");
+			throw new InvalidOperationException("Publish topic is required.");
 		}
 	}
 
@@ -163,7 +172,7 @@ public sealed class MqttService : IMqttService
 	{
 		if (client?.IsConnected != true)
 		{
-			throw new InvalidOperationException("MQTT 未连接。");
+			throw new InvalidOperationException("MQTT is not connected.");
 		}
 	}
 }
