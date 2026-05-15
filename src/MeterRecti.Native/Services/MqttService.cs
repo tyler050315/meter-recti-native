@@ -40,7 +40,7 @@ public sealed class MqttService : IMqttService
 
 		var optionsBuilder = new MqttClientOptionsBuilder()
 			.WithClientId(settings.ClientId)
-			.WithTcpServer(host, settings.Port)
+			.WithTcpServer(host, settings.Port, AddressFamily.InterNetwork)
 			.WithCleanSession()
 			.WithTimeout(TimeSpan.FromSeconds(15));
 
