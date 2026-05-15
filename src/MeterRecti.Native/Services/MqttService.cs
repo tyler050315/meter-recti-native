@@ -35,13 +35,7 @@ public sealed class MqttService : IMqttService
 
 		try
 		{
-			tcpClient = new TcpClient(AddressFamily.InterNetwork)
-			{
-				NoDelay = true
-			};
-
-			var address = await ResolveIPv4AddressAsync(host, token);
-			await tcpClient.ConnectAsync(address, settings.Port, token);
+			tcpClient = await ConnectTcpClientAsync(host, settings.Port, token);
 
 			stream = tcpClient.GetStream();
 			if (settings.UseTls)
@@ -129,20 +123,69 @@ public sealed class MqttService : IMqttService
 		await WritePacketAsync(0x30, body.ToArray(), cancellationToken);
 	}
 
-	private static async Task<IPAddress> ResolveIPv4AddressAsync(string host, CancellationToken cancellationToken)
+	private static async Task<TcpClient> ConnectTcpClientAsync(string host, int port, CancellationToken cancellationToken)
 	{
-		if (IPAddress.TryParse(host, out var parsed))
-		{
-			if (parsed.AddressFamily == AddressFamily.InterNetwork)
-			{
-				return parsed;
-			}
+		var failures = new List<string>();
 
-			throw new InvalidOperationException("Only IPv4 MQTT hosts are supported in this build.");
+		try
+		{
+			var client = new TcpClient
+			{
+				NoDelay = true
+			};
+			await client.ConnectAsync(host, port, cancellationToken);
+			return client;
+		}
+		catch (Exception ex)
+		{
+			failures.Add($"system={DescribeException(ex)}");
 		}
 
-		var addresses = await Dns.GetHostAddressesAsync(host, AddressFamily.InterNetwork, cancellationToken);
-		return addresses.FirstOrDefault() ?? throw new InvalidOperationException($"No IPv4 address found for {host}.");
+		if (IPAddress.TryParse(host, out var parsed))
+		{
+			try
+			{
+				var client = new TcpClient(parsed.AddressFamily)
+				{
+					NoDelay = true
+				};
+				await client.ConnectAsync(parsed, port, cancellationToken);
+				return client;
+			}
+			catch (Exception ex)
+			{
+				failures.Add($"{parsed.AddressFamily}={DescribeException(ex)}");
+			}
+		}
+		else
+		{
+			try
+			{
+				var addresses = await Dns.GetHostAddressesAsync(host, cancellationToken);
+				foreach (var address in addresses.OrderBy(address => address.AddressFamily == AddressFamily.InterNetwork ? 0 : 1))
+				{
+					try
+					{
+						var client = new TcpClient(address.AddressFamily)
+						{
+							NoDelay = true
+						};
+						await client.ConnectAsync(address, port, cancellationToken);
+						return client;
+					}
+					catch (Exception ex)
+					{
+						failures.Add($"{address}={DescribeException(ex)}");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				failures.Add($"dns={DescribeException(ex)}");
+			}
+		}
+
+		throw new InvalidOperationException($"All TCP connect attempts failed: {string.Join(" | ", failures)}");
 	}
 
 	private async Task SendConnectPacketAsync(MqttSettings settings, CancellationToken cancellationToken)

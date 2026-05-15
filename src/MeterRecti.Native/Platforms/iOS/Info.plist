@@ -28,5 +28,12 @@
 	<string>Assets.xcassets/appicon.appiconset</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Meter Recti uses the camera to scan water meter serial numbers.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Meter Recti connects to MQTT brokers on your network.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
