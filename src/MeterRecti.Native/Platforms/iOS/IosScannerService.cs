@@ -223,8 +223,7 @@ internal sealed class ScannerViewController : UIViewController, IAVCaptureMetada
 			session.BeginConfiguration();
 			session.SessionPreset = AVCaptureSession.PresetHigh;
 
-			var device = AVCaptureDevice.GetDefaultDevice(AVCaptureDeviceType.BuiltInWideAngleCamera, AVMediaTypes.Video, AVCaptureDevicePosition.Back)
-				?? AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video);
+			var device = GetBackCamera();
 			if (device is null)
 			{
 				session.CommitConfiguration();
@@ -284,6 +283,12 @@ internal sealed class ScannerViewController : UIViewController, IAVCaptureMetada
 
 		try
 		{
+			var centerPoint = new CGPoint(0.5, 0.5);
+			if (device.FocusPointOfInterestSupported)
+			{
+				device.FocusPointOfInterest = centerPoint;
+			}
+
 			if (device.IsFocusModeSupported(AVCaptureFocusMode.ContinuousAutoFocus))
 			{
 				device.FocusMode = AVCaptureFocusMode.ContinuousAutoFocus;
@@ -292,6 +297,11 @@ internal sealed class ScannerViewController : UIViewController, IAVCaptureMetada
 			if (device.SmoothAutoFocusSupported)
 			{
 				device.SmoothAutoFocusEnabled = true;
+			}
+
+			if (device.ExposurePointOfInterestSupported)
+			{
+				device.ExposurePointOfInterest = centerPoint;
 			}
 
 			if (device.IsExposureModeSupported(AVCaptureExposureMode.ContinuousAutoExposure))
@@ -304,12 +314,26 @@ internal sealed class ScannerViewController : UIViewController, IAVCaptureMetada
 				device.WhiteBalanceMode = AVCaptureWhiteBalanceMode.ContinuousAutoWhiteBalance;
 			}
 
-			device.VideoZoomFactor = (nfloat)Math.Min(device.ActiveFormat.VideoMaxZoomFactor, 1.5f);
+			if (device.SubjectAreaChangeMonitoringEnabled != true)
+			{
+				device.SubjectAreaChangeMonitoringEnabled = true;
+			}
+
+			device.VideoZoomFactor = 1.0f;
 		}
 		finally
 		{
 			device.UnlockForConfiguration();
 		}
+	}
+
+	private static AVCaptureDevice? GetBackCamera()
+	{
+		return AVCaptureDevice.GetDefaultDevice(AVCaptureDeviceType.BuiltInDualWideCamera, AVMediaTypes.Video, AVCaptureDevicePosition.Back)
+			?? AVCaptureDevice.GetDefaultDevice(AVCaptureDeviceType.BuiltInTripleCamera, AVMediaTypes.Video, AVCaptureDevicePosition.Back)
+			?? AVCaptureDevice.GetDefaultDevice(AVCaptureDeviceType.BuiltInDualCamera, AVMediaTypes.Video, AVCaptureDevicePosition.Back)
+			?? AVCaptureDevice.GetDefaultDevice(AVCaptureDeviceType.BuiltInWideAngleCamera, AVMediaTypes.Video, AVCaptureDevicePosition.Back)
+			?? AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video);
 	}
 
 	private void ApplyZoom(nfloat zoom)
@@ -435,6 +459,10 @@ internal sealed class ScannerViewController : UIViewController, IAVCaptureMetada
 				if (device.IsFocusModeSupported(AVCaptureFocusMode.AutoFocus))
 				{
 					device.FocusMode = AVCaptureFocusMode.AutoFocus;
+				}
+				else if (device.IsFocusModeSupported(AVCaptureFocusMode.ContinuousAutoFocus))
+				{
+					device.FocusMode = AVCaptureFocusMode.ContinuousAutoFocus;
 				}
 			}
 
