@@ -9,7 +9,7 @@
     Shell.TabBarForegroundColor="{StaticResource Periwinkle}"
     Shell.TabBarTitleColor="{StaticResource TextPrimary}"
     Shell.TabBarUnselectedColor="{StaticResource TextSecondary}"
-    Title="Meter Recti">
+    Title="Meter Recti Native">
 
     <TabBar>
         <ShellContent

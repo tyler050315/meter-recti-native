@@ -87,6 +87,8 @@ public sealed class SettingsViewModel : ObservableObject
 		private set => SetProperty(ref statusColor, value);
 	}
 
+	public string AppIdentity => $"{AppInfo.Current.Name} / {AppInfo.Current.PackageName}";
+
 	public ICommand SaveAndConnectCommand { get; }
 
 	public ICommand DisconnectCommand { get; }

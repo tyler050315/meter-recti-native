@@ -37,6 +37,7 @@
                     </Grid>
                 </VerticalStackLayout>
             </Border>
+            <Label Text="{Binding AppIdentity}" TextColor="{StaticResource TextSecondary}" FontSize="12" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

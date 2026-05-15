@@ -1,5 +1,4 @@
 using AVFoundation;
-using CoreAnimation;
 using CoreFoundation;
 using CoreGraphics;
 using Foundation;
@@ -23,7 +22,7 @@ public sealed class IosScannerService : IScannerService
 		}
 		else if (status != AVAuthorizationStatus.Authorized)
 		{
-			throw new InvalidOperationException("相机权限未开启，请在系统设置中允许 Meter Recti 使用相机。");
+			throw new InvalidOperationException("相机权限未开启，请在系统设置中允许 Meter Recti Native 使用相机。");
 		}
 
 		var presenter = GetTopViewController() ?? throw new InvalidOperationException("无法打开扫码界面。");
